@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Coolbe</title>
+
+  <!-- Open Graph (untuk berbagi di Facebook, WhatsApp, dsb.) -->
+  <meta property="og:title" content="Radio Online Favorit Kamu" />
+  <meta property="og:description" content="Dengerin berbagai genre musik 24 jam nonstop!" />
+  <meta property="og:image" content="https://i.ibb.co/8g0dvYgn/file-000000005830622f96179be6ada1129d.png" />
+  <meta property="og:url" content="https://radiohubid.vercel.app/" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Radio Online Favorit Kamu" />
+  <meta name="twitter:description" content="Dengerin musik berbagai genre 24 jam nonstop." />
+  <meta name="twitter:image" content="https://i.ibb.co/0pJwmD1F/file-00000000100461f5b2cf86d5aaed0f6b.png" />
+
+  <!-- Favicon dan Apple Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.ibb.co/0pJwmD1F/file-00000000100461f5b2cf86d5aaed0f6b.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="https://i.ibb.co/0pJwmD1F/file-00000000100461f5b2cf86d5aaed0f6b.png" />
+  <link rel="apple-touch-icon" href="https://i.ibb.co/0pJwmD1F/file-00000000100461f5b2cf86d5aaed0f6b.png" />
+  <link rel="icon" type="image/png" href="https://i.ibb.co/0pJwmD1F/file-00000000100461f5b2cf86d5aaed0f6b.png" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<style>
+.station-card {
+  width: 180px;
+}
+</style>
+
+<style>
+.status-label {
+  font-weight: bold;
+  margin-top: 8px;
+  display: inline-block;
+}
+  #radioModal {
+    transition: all 0.3s ease-in-out;
+  }
+</style>
+
+<body class="bg-gray-100 text-gray-900 font-sans">
+
+<!-- === HOME PAGE === -->
+<section id="homePage" class="min-h-screen p-4 pb-24 space-y-6">
+  <h1 class="text-2xl font-bold mb-2">📻 RadioHub</h1>
+
+  <!-- === SEARCH BAR === -->
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="Cari radio..."
+    oninput="searchRadio(this.value)"
+    class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+  />
+
+  <!-- === SLIDER CTA === -->
+  <div class="relative w-full h-40 rounded-xl overflow-hidden">
+    <img id="sliderImg" src="https://source.unsplash.com/800x200/?music" class="w-full h-full object-cover transition-all duration-700" />
+    <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white px-4 py-1 text-sm">🎧 Temukan Musik Terbaik</div>
+  </div>
+
+  <!-- === KATEGORI RADIO === -->
+  <div class="flex flex-wrap gap-2 mt-2">
+    <button onclick="filterCategory('all')" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-full text-sm">Semua</button>
+    <button onclick="filterCategory('rock')" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-full text-sm">Rock</button>
+    <button onclick="filterCategory('disco')" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-full text-sm">Disco</button>
+    <button onclick="filterCategory('classical')" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-full text-sm">Classical</button>
+  </div>
+
+  <!-- === HASIL FILTER === -->
+  <div id="cardContainer" class="grid grid-cols-2 sm:grid-cols-3 gap-3 hidden"></div>
+
+  <!-- === RADIO HOT === -->
+  <div>
+    <h2 class="text-lg font-semibold mb-2">🔥 Radio Hot</h2>
+    <div id="hotRadio" class="grid grid-cols-2 gap-3"></div>
+  </div>
+
+  <!-- === TRENDING RADIO === -->
+  <div>
+    <h2 class="text-lg font-semibold mb-2">📈 Trending Radio</h2>
+    <div id="trendingRadio" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+  </div>
+
+  <!-- === UNTUK ANDA === -->
+  <div>
+    <h2 class="text-lg font-semibold mb-2">💡 Untuk Anda</h2>
+    <div id="forYouRadio" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+  </div>
+</section>
+
+<!-- === FAVORIT PAGE === -->
+<section id="favoritePage" class="hidden min-h-screen p-4 pb-24">
+  <h1 class="text-2xl font-bold mb-4">❤️ Favorit</h1>
+  <div id="favoriteList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+</section>
+
+<!-- === MODAL RADIO === -->
+<div id="radioModal" class="fixed inset-0 bg-black bg-opacity-60 hidden justify-center items-center z-50">
+  <div class="bg-white w-[90%] max-w-md rounded-2xl shadow-xl overflow-hidden relative">
+    <div class="relative">
+      <img id="modalImg" src="" alt="Radio Thumbnail" class="w-full h-48 object-cover" />
+      <button onclick="closeModal()" class="absolute top-2 left-2 bg-black bg-opacity-40 text-white px-3 py-1 rounded-full text-sm z-10 cursor-pointer">← Kembali</button>
+      <button id="loveBtn" class="absolute top-2 right-2 text-white text-2xl z-10 cursor-pointer">🤍</button>
+    </div>
+    <div class="p-4 text-center">
+      <h2 id="modalTitle" class="text-xl font-bold mb-2">Judul Radio</h2>
+      <audio id="modalAudio" controls class="w-full rounded-md mb-2"></audio>
+    </div>
+  </div>
+</div>
+
+<!-- === MINI PLAYER (SVG) === -->
+<div id="miniPlayer" class="fixed top-2 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-white rounded-full shadow-lg flex items-center justify-between px-4 py-2 z-40 hidden transition-all duration-500">
+  <button id="miniPlayPause" class="w-8 h-8 flex items-center justify-center text-gray-700">
+    <!-- ICON SVG akan diubah lewat JS -->
+    <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 fill-current" viewBox="0 0 24 24">
+      <path d="M8 5v14l11-7z" /> <!-- Ikon Play -->
+    </svg>
+    <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 fill-current hidden" viewBox="0 0 24 24">
+      <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /> <!-- Ikon Pause -->
+    </svg>
+  </button>
+  <h2 id="miniTitle" class="text-sm font-medium truncate text-center flex-1 mx-2">Judul Radio</h2>
+  <img id="miniThumb" src="" class="w-10 h-10 rounded-full object-cover" />
+</div>
+
+<!-- === NAVIGASI BAWAH === -->
+<nav class="fixed bottom-2 left-1/2 -translate-x-1/2 w-[90%] bg-white rounded-full shadow-xl flex justify-around items-center px-6 py-3 z-50">
+  <button id="navHome" onclick="showPage('homePage')" class="nav-btn text-gray-600 flex flex-col items-center">
+    <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M3 12l2-2m0 0l7-7 7 7m-7-7v18"/>
+    </svg>
+    <span class="text-xs">Beranda</span>
+  </button>
+  <button id="navFav" onclick="showPage('favoritePage'); renderFavorites()" class="nav-btn text-gray-600 flex flex-col items-center">
+    <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M4.318 6.318a4.5 4.5 0 0 1 6.364 0L12 7.636l1.318-1.318a4.5 4.5 0 1 1 6.364 6.364L12 21.364 4.318 13.682a4.5 4.5 0 0 1 0-6.364z"/>
+    </svg>
+    <span class="text-xs">Favorit</span>
+  </button>
+</nav>
+
+<!-- === NOTIFIKASI FAVORIT === -->
+<div id="notif" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-full shadow-md hidden z-50">
+  Ditambahkan ke Favorit!
+</div>
+
+<!-- === SCRIPT === -->
+<script>
+  const stations = [
+  {
+    name: "🎸 24-7 Just Rock",
+    src: "http://31.132.6.142:4324/;",
+    thumbnail: "https://i.ibb.co/ksC8byQq/hardrock.png"
+  },
+  {
+    name: "🎶 24-7 Disco",
+    src: "http://antares.dribbcast.com:4336/;",
+    thumbnail: "https://i.ibb.co/Gb6PSf8/images-10.jpg"
+  },
+  {
+    name: "🎼 24-7 Classical",
+    src: "http://31.132.6.142:4318/;",
+    thumbnail: "https://i.ibb.co/gLmGmBg9/images-12.jpg"
+  },
+  {
+    name: "🎧 Lo-Fi Beats",
+    src: "https://stream.zeno.fm/s4wvv6m1v0hvv",
+    thumbnail: "https://i.ibb.co/G4GpfgX7/images-13.jpg"
+  },
+  {
+    name: "🔥 EDM Party",
+    src: "http://ice1.somafm.com/groovesalad-128-mp3",
+    thumbnail: "https://i.ibb.co/JWvYnsRc/images-14.jpg"
+  },
+  {
+    name: "🎤 Hip Hop Nation",
+    src: "https://stream.zeno.fm/p2zfyv7x6nhvv",
+    thumbnail: "https://i.ibb.co/8LHxQH6b/images-15.jpg"
+  },
+  {
+    name: "🎹 Chill Instrumental",
+    src: "https://stream.zeno.fm/h99dff1s3v8uv",
+    thumbnail: "https://i.ibb.co/YB7KQD73/images-16.jpg"
+  },
+  {
+    name: "🌿 Nature Sounds",
+    src: "https://stream.zeno.fm/naturesounds",
+    thumbnail: "https://i.ibb.co/231LhPcD/images-17.jpg"
+  },
+  {
+    name: "💤 Sleep Radio",
+    src: "http://stream.sleepfm.com:8000/sleep",
+    thumbnail: "https://i.ibb.co/B1BBJxb/images-18.jpg"
+  },
+  {
+    name: "🎺 Jazz Vibes",
+    src: "http://streaming.tdiradio.com:8000/tdiradio.mp3",
+    thumbnail: "https://i.ibb.co/xKZD42tg/images-19.jpg"
+  },
+  {
+    name: "🎻 Calm Piano",
+    src: "http://streaming.radionomy.com/calmpiano",
+    thumbnail: "https://i.ibb.co/1GBscsmw/images-20.jpg"
+  },
+  {
+    name: "🎮 Chiptune FM",
+    src: "http://stream.zombiestation.net:8000/chiptunes",
+    thumbnail: "https://i.ibb.co/39NZSy3p/images-21.jpg"
+  },
+  
+  // Stasiun Radio Lokal Indonesia
+  {
+    name: "🎙️ RRI Pro 1 Jakarta",
+    src: "http://103.16.199.6:8000/pro1jakarta",
+    thumbnail: "https://i.ibb.co/NdNq0wJB/images-22.jpg"
+},
+  {
+    name: "🎙️ RRI Pro 2 Surabaya",
+    src: "http://103.16.199.6:8000/pro2surabaya",
+    thumbnail: "https://i.ibb.co/xSkshYQD/images-2.png"
+  },
+  {
+    name: "🎙️ Prambors FM Jakarta",
+    src: "https://prambors.streamguys1.com/pramborsmp3",
+    thumbnail: "https://i.ibb.co/1tmhhxXv/images-23.jpg"
+  },
+  {
+    name: "🎶 Hard Rock FM Jakarta",
+    src: "https://streaming.radiodd.com/8010/stream",
+    thumbnail: "https://i.ibb.co/cczM9nQk/images-1.png"
+  },
+  {
+    name: "📻 Gen FM Jakarta",
+    src: "https://masima.rastream.com/masima-genfmjakarta",
+    thumbnail: "https://i.ibb.co/6c06YFY4/images-3.png"
+  },
+  {
+    name: "🎧 Mustang FM",
+    src: "https://masima.rastream.com/masima-mustangfmjakarta",
+    thumbnail: "https://i.ibb.co/L4hbwRW/images.png"
+  },
+  {
+    name: "🌐 BBC World Service",
+    src: "https://stream.live.vc.bbcmedia.co.uk/bbc_world_service",
+    thumbnail: "https://i.ibb.co/svYh8pDh/images-4.png"
+  },
+  {
+    name: "🎵 Radio Swiss Pop",
+    src: "https://stream.srg-ssr.ch/m/rsp/aacp_96",
+    thumbnail: "https://i.ibb.co/fV9VvF80/Radio-Swiss-Pop-Logo-2018-svg.png"
+  },
+  {
+    name: "📡 Jazz24 – Seattle, USA",
+    src: "https://icy1.abacast.com/kplu-jazz24aac-64",
+    thumbnail: "https://i.ibb.co/YBNm02j7/images-24.jpg"
+  },
+  {
+    name: "🎚️ 181.FM – The Beat (HipHop/R&B)",
+    src: "http://listen.181fm.com/181-beat_64k.aac",
+    thumbnail: "https://i.ibb.co/8VwPS4X/images-25.jpg"
+  },
+  {
+    name: "🎤 Virgin Radio Indonesia",
+    src: "https://stream.revma.ihrhls.com/zc4341/hls.m3u8",
+    thumbnail: "https://i.ibb.co/6RV45qNr/images-5.png"
+  },
+  {
+    name: "🎙️ Elshinta FM Jakarta",
+    src: "http://streaming.elshinta.com:8000/live",
+    thumbnail: "https://i.ibb.co/DH5X0Jdg/images-26.jpg"
+  },
+  {
+    name: "🎙️ Sonora FM Jakarta",
+    src: "http://198.18.0.1:8000/sonora",
+    thumbnail: "https://i.ibb.co/YBC6Frcb/images-27.jpg"
+  },
+  {
+    name: "🎙️ Radio Dakta Bandung",
+    src: "http://radio.dakta.id:8000/dakta",
+    thumbnail: "https://i.ibb.co/ymGbb7Q6/content-1699857375042.webp"
+  },
+  {
+    name: "🎙️ Radio Gema Surabaya",
+    src: "http://103.16.199.6:8000/gemasurabaya",
+    thumbnail: "https://i.ibb.co/C3q2fpcd/images-28.jpg"
+  },
+  {
+    name: "🎙️ RFM Jakarta",
+    src: "http://rfmstream.mandiriwhiz.com:8000/live",
+    thumbnail: "https://i.ibb.co/Vp3MCwmJ/29181804.jpg"
+  }
+];
+  const modal = document.getElementById('radioModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalImg = document.getElementById('modalImg');
+  const modalAudio = document.getElementById('modalAudio');
+  const loveBtn = document.getElementById('loveBtn');
+  const cardContainer = document.getElementById('cardContainer');
+  const favoriteList = document.getElementById('favoriteList');
+  const notif = document.getElementById('notif');
+  const sliderImg = document.getElementById("sliderImg");
+  const hotRadio = document.getElementById("hotRadio");
+  const trendingRadio = document.getElementById("trendingRadio");
+  const forYouRadio = document.getElementById("forYouRadio");
+
+  const miniPlayer = document.getElementById("miniPlayer");
+  const miniTitle = document.getElementById("miniTitle");
+  const miniThumb = document.getElementById("miniThumb");
+  const miniPlayPause = document.getElementById("miniPlayPause");
+
+  let selectedStation = null;
+
+  function showPage(id) {
+    document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
+    document.getElementById(id).classList.remove("hidden");
+
+    document.querySelectorAll(".nav-btn").forEach(btn => {
+      btn.classList.remove("text-blue-600", "font-bold");
+      btn.classList.add("text-gray-600");
+      btn.querySelector("svg").classList.remove("stroke-blue-600");
+      btn.querySelector("svg").classList.add("stroke-gray-600");
+    });
+
+    if (id === "homePage") {
+      setActiveNav("navHome");
+    } else if (id === "favoritePage") {
+      setActiveNav("navFav");
+      renderFavorites();
+    }
+  }
+
+  function setActiveNav(id) {
+    const btn = document.getElementById(id);
+    btn.classList.add("text-blue-600", "font-bold");
+    btn.classList.remove("text-gray-600");
+    btn.querySelector("svg").classList.add("stroke-blue-600");
+    btn.querySelector("svg").classList.remove("stroke-gray-600");
+  }
+
+  function renderCards(list, target) {
+    target.innerHTML = "";
+    list.forEach(st => {
+      const card = document.createElement('div');
+      card.className = 'bg-white rounded-xl shadow hover:shadow-lg transition cursor-pointer';
+      card.innerHTML = `
+        <img src="${st.thumbnail}" alt="${st.name}" class="w-full h-40 object-cover rounded-t-xl" />
+        <div class="p-3">
+          <h2 class="text-lg font-semibold">${st.name}</h2>
+        </div>
+      `;
+      card.onclick = () => openModal(st);
+      target.appendChild(card);
+    });
+  }
+
+  function openModal(station) {
+  selectedStation = station;
+  modalTitle.textContent = station.name;
+  modalImg.src = station.thumbnail;
+  
+  // Cek apakah audio sudah memutar stasiun yang sama
+  if (modalAudio.src !== station.src) {
+    modalAudio.src = station.src;
+    modalAudio.play(); // hanya play kalau stasiun baru
+  }
+  
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  updateLoveIcon();
+  miniPlayer.classList.add("hidden");
+  
+  // Jika audio sudah diputar (misalnya dari mini player), biarkan lanjut
+  if (modalAudio.paused) {
+    modalAudio.play();
+  }
+}
+
+  function closeModal() {
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+  // Hapus pause agar audio tetap lanjut
+  // modalAudio.pause();
+  showMiniPlayer(selectedStation);
+}
+
+  function showMiniPlayer(station) {
+    if (!station) return;
+    miniTitle.textContent = station.name;
+    miniThumb.src = station.thumbnail;
+    miniPlayer.classList.remove("hidden");
+
+    // Ubah ikon play/pause
+    updateMiniIcons();
+
+    miniPlayPause.onclick = function (e) {
+      e.stopPropagation(); // Agar tombol play/pause tidak membuka modal
+      if (modalAudio.paused) {
+        modalAudio.play();
+      } else {
+        modalAudio.pause();
+      }
+      updateMiniIcons(); // Perbarui ikon
+    };
+  }
+
+  // Fungsi untuk memperbarui ikon play/pause
+  function updateMiniIcons() {
+    const isPaused = modalAudio.paused;
+    
+    // Menyembunyikan ikon play dan menampilkan ikon pause jika audio diputar
+    document.getElementById('playIcon').classList.toggle('hidden', !isPaused);
+    document.getElementById('pauseIcon').classList.toggle('hidden', isPaused);
+  }
+
+  miniPlayer.onclick = () => {
+    openModal(selectedStation); // buka modal saat mini player diklik
+  };
+
+  modalAudio.addEventListener("ended", () => {
+    miniPlayer.classList.add("hidden");
+  });
+
+  function updateLoveIcon() {
+    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+    const isFav = favorites.some(f => f.name === selectedStation.name);
+    loveBtn.innerHTML = isFav ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21l-3.447-3.447a4.548 4.548 0 01-6.342-6.342c1.756-1.756 4.544-2.496 7.183-2.496 2.64 0 5.428.74 7.183 2.496a4.548 4.548 0 01-6.342 6.342L12 21z" /></svg>` : `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 19.121a4 4 0 115.657-5.657L12 12l1.121-1.121a4 4 0 115.657 5.657l-3.179 3.179a4 4 0 01-5.657 0l-3.179-3.179a4 4 0 01-5.657 0z" /></svg>`;
+  }
+
+  loveBtn.onclick = () => {
+    if (!selectedStation) return;
+    let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+    const index = favorites.findIndex(f => f.name === selectedStation.name);
+
+    if (index === -1) {
+      favorites.push(selectedStation);
+      showNotif("Ditambahkan ke Favorit!");
+    } else {
+      favorites.splice(index, 1);
+      showNotif("Dihapus dari Favorit!");
+    }
+
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+    updateLoveIcon();
+    renderFavorites();
+  };
+
+  function renderFavorites() {
+    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+    renderCards(favorites, favoriteList);
+  }
+
+  function showNotif(msg) {
+    notif.textContent = msg;
+    notif.classList.remove("hidden");
+    setTimeout(() => notif.classList.add("hidden"), 2000);
+  }
+
+  const sliderImages = [
+    "https://i.ibb.co/vCwZDF2M/images-7.jpg",
+    "https://i.ibb.co/pv59cVqP/images-8.jpg",
+    "https://i.ibb.co/FL8wLccS/images-6.jpg",
+    "https://i.ibb.co/jqz46qx/images-9.jpg"
+  ];
+  let sliderIndex = 0;
+  setInterval(() => {
+    sliderIndex = (sliderIndex + 1) % sliderImages.length;
+    sliderImg.src = sliderImages[sliderIndex];
+  }, 3000);
+
+  function filterCategory(cat) {
+    let filtered = stations;
+    if (cat !== 'all') {
+      filtered = stations.filter(s => s.name.toLowerCase().includes(cat));
+    }
+
+    cardContainer.classList.remove('hidden');
+    if (filtered.length > 0) {
+      renderCards(filtered, cardContainer);
+    } else {
+      cardContainer.innerHTML = "<p class='text-sm text-gray-500 col-span-2'>Tidak ada hasil ditemukan.</p>";
+    }
+  }
+
+  function searchRadio(keyword) {
+    const value = keyword.toLowerCase().trim();
+    const results = stations.filter(s => s.name.toLowerCase().includes(value));
+    cardContainer.classList.remove('hidden');
+    if (results.length > 0) {
+      renderCards(results, cardContainer);
+    } else {
+      cardContainer.innerHTML = "<p class='text-sm text-gray-500 col-span-2'>Tidak ditemukan radio dengan kata kunci tersebut.</p>";
+    }
+  }
+
+  function shuffleArray(arr) {
+    return [...arr].sort(() => Math.random() - 0.5);
+  }
+
+  function renderRadioSections() {
+    const shuffled = shuffleArray(stations);
+    const total = shuffled.length;
+
+    hotRadio.innerHTML = "";
+    trendingRadio.innerHTML = "";
+    forYouRadio.innerHTML = "";
+
+    if (total === 0) {
+      const msg = "<p class='text-sm text-gray-500'>Belum ada radio tersedia.</p>";
+      hotRadio.innerHTML = trendingRadio.innerHTML = forYouRadio.innerHTML = msg;
+      return;
+    }
+
+    renderCards(shuffled.slice(0, 2), hotRadio);
+    renderCards(shuffled.slice(2, 6), trendingRadio);
+    renderCards(shuffled.slice(6, 10), forYouRadio);
+  }
+
+  renderRadioSections();
+</script>
+</body>
+</html>
